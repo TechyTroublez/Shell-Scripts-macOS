@@ -1,0 +1,48 @@
+#!/bin/zsh
+
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin
+
+xcodePath="/Applications/Xcode.app"
+logFile="/Library/Logs/Microsoft/IntuneScripts/Xcode/XcodeSetupLog.txt"
+
+# Create log directory if it doesn't exist
+logDirectory=$(dirname "$logFile")
+mkdir -p "$logDirectory"
+
+# Function to log messages
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S'): $1" >> "$logFile"
+}
+
+log "Starting Xcode setup script..."
+
+# Check if Xcode is found before proceeding
+if ! xcode-select -p >/dev/null 2>&1; then
+    log "Xcode not found, exiting..."
+    exit 1
+fi
+
+log "Selecting Xcode..."
+xcode-select -s "$xcodePath" >> "$logFile" 2>&1
+
+log "Accepting Xcode license..."
+xcodebuild -license accept >> "$logFile" 2>&1
+
+log "Installing additional components..."
+xcodebuild -runFirstLaunch >> "$logFile" 2>&1
+
+# Get the currently logged-in username
+loggedInUser=$(stat -f "%Su" /dev/console)
+
+# Check if the user is already in the developer group
+if ! dseditgroup -o checkmember -m "$loggedInUser" _developer >/dev/null 2>&1; then
+    log "Adding $loggedInUser to developer group..."
+    dseditgroup -o edit -a "$loggedInUser" -t user _developer >> "$logFile" 2>&1
+else
+    log "$loggedInUser is already a member of the developer group."
+fi
+
+log "Enabling dev tools security..."
+DevToolsSecurity -enable >> "$logFile" 2>&1
+
+log "Xcode setup script completed."
