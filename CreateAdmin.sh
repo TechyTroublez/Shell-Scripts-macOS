@@ -5,9 +5,9 @@
 # Created by: Dean Hoile
 
 # Set variables
-managedAdminAccount="ladmin"
+managedAdminAccount="adminnamehere"
 managedAdminUID="509"  # Set the UID value here
-managedAdminAccountPassword="GaDwu93re"
+managedAdminAccountPassword="passwordhere"
 logFile="/Library/Logs/Microsoft/IntuneScripts/CreateAdmin.txt"
 
 # Check if the admin account already exists
